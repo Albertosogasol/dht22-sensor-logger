@@ -6,7 +6,8 @@
     "location": {
         "latitude": "XX.XXXXXX",
         "longitude": "YY.YYYYYY",
-        "location_name": "Zaragoza"
+        "city": "Zaragoza",
+        "location_name" : "Room"
     },
     "database": {
         "path": "/mnt/shared_folder/sensores_data/temperaturas.db"
