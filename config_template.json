@@ -1,0 +1,14 @@
+{
+    "sensor_pins": {
+        "outside": "##",
+        "inside": "##"
+    },
+    "location": {
+        "latitude": "XX.XXXXXX",
+        "longitude": "YY.YYYYYY",
+        "location_name": "Zaragoza"
+    },
+    "database": {
+        "path": "/mnt/shared_folder/sensores_data/temperaturas.db"
+    }
+}
