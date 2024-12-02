@@ -6,10 +6,13 @@
     "location": {
         "latitude": "XX.XXXXXX",
         "longitude": "YY.YYYYYY",
-        "city": "Zaragoza",
-        "location_name" : "Room"
+        "city": "yourCity",
+        "location_name" : "Room",
+        "country" : "yourCountry", 
+        "postal_code":"yourPostalCode",
+        "street": "yourStreet"
     },
     "database": {
-        "path": "/mnt/shared_folder/sensores_data/temperaturas.db"
+        "path": "/mnt/shared_folder/sensores_data/temperatures.db"
     }
 }
