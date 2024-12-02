@@ -1,9 +1,7 @@
 import time
 import Adafruit_DHT
 import sqlite3
-import os
 import logging
-import json
 
 import config_loader
 
