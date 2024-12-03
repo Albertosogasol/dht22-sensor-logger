@@ -2,11 +2,19 @@ import time
 import Adafruit_DHT
 import sqlite3
 import logging
+import json
+import os
 
 import config_loader
+log_path = '/log/sensor_log.log'
+tmp_log_path = '/tmp/sensor_log.log'
+
+# Obtener el directorio del script actual
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, 'config.json')
 
 # Configuración de logging
-logging.basicConfig(level=logging.INFO, filename='log/sensor_log.log', 
+logging.basicConfig(level=logging.INFO, filename='/tmp/sensor_log.log', 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Variables globales
@@ -30,7 +38,11 @@ def load_configuration():
     global sensor_pins, location, database, outside_pin, inside_pin, latitude, longitude
     global city, location_name, country, postal_code, street, db_path
 
-    config = config_loader.load_config()
+    try:
+        config = config_loader.load_config(config_path)
+    except Exception as e:
+        logging.error(f"No se pudo cargar la configuración: {config}")
+        exit(1)
 
     if config:
         sensor_pins = config["sensor_pins"]
