@@ -108,7 +108,7 @@ def read_sensor(pin):
             return round(temperature, 2), round(humidity, 2)
         else:
             logging.warning(f"Fallo en la lectura del sensor en el pin {pin}. Reintentando...")
-        time.sleep(1)  # Esperar 1 segundo antes de reintentar
+        time.sleep(5)  # Esperar 5 segundos antes de reintentar
     logging.error(f"Fallo en la lectura del sensor en el pin {pin} después de varios intentos.")
     return None, None
 
@@ -137,7 +137,7 @@ def get_valid_measurement(pin, sensor_location):
         if humidity is not None and 0 <= humidity <= 100:
             return temperature, humidity
         if attempt < 4:  # Solo esperar 10s si no es el último intento
-            logging.warning(f"Lectura incorrecta. Reintentando en 10 segundos... (Intento {attempt + 1}/5)")
+            logging.warning(f"Lectura de humedad fuera de rango. Reintentando en 10 segundos... (Intento {attempt + 1}/5)")
             time.sleep(10)
     
     # Si no se obtuvo lectura válida después de 5 intentos
