@@ -4,6 +4,8 @@ import sqlite3
 import logging
 import json
 import os
+import mqtt_client
+
 
 import config_loader
 log_path = '/log/sensor_log.log'
@@ -102,17 +104,17 @@ def create_table(conn):
 # Lectura de los datos del sensor
 def read_sensor(pin):
     # Intentar leer el sensor varias veces
-    for _ in range(5):  # Intentar hasta 5 veces
+    for _ in range(1):  # Intentar hasta 5 veces ################################ SE TENIA EN 5 INTENTOS
         humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, pin)
         if humidity is not None and temperature is not None:
             return round(temperature, 2), round(humidity, 2)
         else:
             logging.warning(f"Fallo en la lectura del sensor en el pin {pin}. Reintentando...")
+            print(f"Fallo en la lectura del sensor en el pin {pin}. Reintentando...")
         time.sleep(5)  # Esperar 5 segundos antes de reintentar
     logging.error(f"Fallo en la lectura del sensor en el pin {pin} después de varios intentos.")
     return None, None
 
-# Insertar datos en DB
 def insert_data(conn, location_name, temperature, humidity, sensor_type):
     """Insertar los datos de temperatura y humedad en la base de datos"""
     insert_query = """
@@ -125,19 +127,36 @@ def insert_data(conn, location_name, temperature, humidity, sensor_type):
         cursor.execute(insert_query, (location_name, temperature, humidity, sensor_type,  
                                       latitude, longitude, city, country, postal_code, street))
         conn.commit()
+
+        # Enviar por MQTT
+        mqtt_client.publish_mqtt({
+            "location": location_name,
+            "temperature": temperature,
+            "humidity": humidity,
+            "sensor_type": sensor_type,
+            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "latitude": latitude,
+            "longitude": longitude,
+            "city": city,
+            "country": country,
+            "postal_code": postal_code,
+            "street": street
+        })
+
     except sqlite3.Error as e:
         logging.error(f"Error al insertar datos en la base de datos: {e}")
+
 
 # Función para obtener medición válida
 def get_valid_measurement(pin, sensor_location):
     """Obtenemos una medición válida de los sensores con reintentos si es necesario"""
-    for attempt in range(5):
+    for attempt in range(1): # Intentar hasta 5 veces ################################ SE TENIA EN 5 INTENTOS
         temperature, humidity = read_sensor(pin)
         
         if humidity is not None and 0 <= humidity <= 100:
             return temperature, humidity
         if attempt < 4:  # Solo esperar 10s si no es el último intento
-            logging.warning(f"Lectura de humedad fuera de rango. Reintentando en 10 segundos... (Intento {attempt + 1}/5)")
+            logging.warning(f"Lectura de humedad fuera de rango. Reintentando en 10 segundos... (Intento {attempt + 1}/1)") ################################ SE TENIA EN 5 INTENTOS
             time.sleep(10)
     
     # Si no se obtuvo lectura válida después de 5 intentos

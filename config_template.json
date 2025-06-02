@@ -7,12 +7,17 @@
         "latitude": "XX.XXXXXX",
         "longitude": "YY.YYYYYY",
         "city": "yourCity",
-        "location_name" : "Room",
-        "country" : "yourCountry", 
-        "postal_code":"yourPostalCode",
+        "location_name": "Room",
+        "country": "yourCountry",
+        "postal_code": "yourPostalCode",
         "street": "yourStreet"
     },
     "database": {
         "path": "/mnt/shared_folder/sensores_data/temperatures.db"
+    },
+    "mqtt": {
+        "broker": "your.mqtt.broker.ip",
+        "port": 1883,
+        "topic": "casa/sensores/temperatura"
     }
 }
