@@ -168,6 +168,7 @@ def main():
         temperature, humidity = get_valid_measurement(pin, sensor_type)
         if temperature is not None and humidity is not None:
             if save_to_db and conn:
+                print("Guardado en BBDD")
                 insert_data(conn, temperature, humidity, sensor_type, timestamp)
             else:
                 publish_measurement(sensor_type, temperature, humidity, timestamp)
