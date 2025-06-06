@@ -2,23 +2,26 @@ import paho.mqtt.client as mqtt
 import json
 import logging
 import os
-import config_loader  # Asumo que tienes este módulo para cargar config.json
+import config_loader  # Módulo propio para cargar config.json
 
-# Obtener el path absoluto del config.json (asumiendo que está en el mismo directorio que mqtt_client.py)
+# Obtener el path absoluto del config.json
 script_dir = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(script_dir, 'config.json')
 
-# Cargar configuración
+# Configurar logging básico
+logging.basicConfig(level=logging.INFO)
+
+# Cargar configuración MQTT
 try:
     config = config_loader.load_config(config_path)
     MQTT_BROKER = config.get('mqtt', {}).get('broker', 'localhost')
     MQTT_PORT = int(config.get('mqtt', {}).get('port', 1883))
-    MQTT_TOPIC = config.get('mqtt', {}).get('topic', 'casa/sensores/temperatura')
+    MQTT_TOPIC = config.get('mqtt', {}).get('topic', 'casa/sensores/dht22')
 except Exception as e:
     logging.error(f"Error al cargar configuración MQTT: {e}")
     MQTT_BROKER = 'localhost'
     MQTT_PORT = 1883
-    MQTT_TOPIC = 'casa/sensores/temperatura'
+    MQTT_TOPIC = 'casa/sensores/dht22'
 
 
 def publish_mqtt(data):
@@ -26,17 +29,23 @@ def publish_mqtt(data):
         client = mqtt.Client()
         client.connect(MQTT_BROKER, MQTT_PORT, 60)
 
-        # Topic original (mantenerlo por compatibilidad)
         payload = json.dumps(data)
-        client.publish(MQTT_TOPIC, payload)
 
-        # Nuevos topics separados por ciudad/sensor/tipo
-        base_topic = f"casa/{data['city'].lower()}/{data['sensor_type'].lower()}"
-        client.publish(f"{base_topic}/temperatura", str(data["temperature"]))
-        client.publish(f"{base_topic}/humedad", str(data["humidity"]))
-        print(f"Mensaje publicado con exito")
+        # 1. Publicar al topic específico según tipo de sensor
+        sensor_type = data.get("sensor_type", "desconocido").lower()
+        topic_by_type = f"{MQTT_TOPIC}/{sensor_type}"  # Ej: casa/sensores/dht22/interior
+        client.publish(topic_by_type, payload)
+
+        # 2. Publicar datos individuales a topics por ciudad/sensor
+        city = data.get("city", "desconocida").lower()
+        base_topic = f"casa/{city}/{sensor_type}"
+        client.publish(f"{base_topic}/temperatura", str(data.get("temperature", "")))
+        client.publish(f"{base_topic}/humedad", str(data.get("humidity", "")))
+
+        print(f"Mensaje publicado en {topic_by_type}")
+        logging.info(f"Publicado MQTT a múltiples topics: {payload}")
 
         client.disconnect()
-        logging.info(f"Publicado MQTT a múltiples topics: {payload}")
+
     except Exception as e:
         logging.error(f"Error al publicar en MQTT: {e}")
